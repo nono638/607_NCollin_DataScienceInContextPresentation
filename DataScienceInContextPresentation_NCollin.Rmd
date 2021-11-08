@@ -1,0 +1,188 @@
+---
+title: "NCollin_DataScienceInContext_607"
+author: "Noah Collin"
+date: "11/7/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 3-D Scatter Plots
+
+Creating 3-d scatterplots is an interesting and engaging way to display data across three dimensions.  A "fourth dimension" could be added with color, and a other dimensions of data could be added by changing the size and shape of points as well.
+
+This Markdown file shows three ways to graph scatterplots in 3-d:
+-Lattice
+
+
+
+## Scatterplot with Lattice
+
+```{r tidyverse}
+library(tidyverse)
+```
+
+## Iris data:
+We'll be using the iris data which is built into R-studio for this demo.
+
+https://en.wikipedia.org/wiki/Iris_flower_data_set
+
+```{r iris}
+head(iris)
+```
+
+
+## Lattice
+
+The following lattice code and scatterplot3d code were modeled after code found here: 
+*https://app.pluralsight.com/library/courses/creating-special-purpose-plots-r-playbook/table-of-contents*
+
+```{r lattice}
+#install.packages("lattice")
+library(lattice)
+
+cloud(Sepal.Length ~ Sepal.Width * Petal.Width, 
+      data = iris, 
+      group = Species)
+```
+
+## Saving your lattice file.
+
+You can save your output as needed this way in R-Studio:
+```{r cloudOutput1}
+png("myPlot.png")
+print(cloud(Sepal.Length ~ Sepal.Width * Petal.Width, 
+      data = iris, 
+      group = Species))
+dev.off()
+```
+
+## Scatterplot3d Demo 1
+
+scatterplot3d can use the x, y, and z arguments can be named explicitly:
+```{r Scatterplot3d-1}
+#install.packages("scatterplot3d")
+library(scatterplot3d)
+
+#head(iris)
+
+#This code  works, the x, y, and z arguments can be named explicitly.  The angle argument changes the 
+scatterplot3d(x = iris$Sepal.Length,
+              y = iris$Sepal.Width,
+              z = iris$Petal.Length, 
+              angle = 19)
+```
+
+## Scatterplot3d Demo 2
+
+Or a dataframe with specific columns references can be passed in:
+```{r Scatterplot3d-2}
+
+#names or hexidecimal colors can be used
+colors <- c("brown", "#999123","navy blue")
+#make a vector of characters for the iris's corresponding colors to species:
+colors <- colors[as.numeric(iris$Species)]
+
+#The dataframe can be passed in with just the appropriate three columns as x, y, and z sequentially.  Set the color argument to a vector like the one created above in this block.  col.grid is color of the grid, nothing to do with columns.  Black makes the grid appear darker
+scatterplot3d(iris[,1:3], angle = 57, color = colors, col.grid = "black")
+
+#documentation: https://www.rdocumentation.org/packages/scatterplot3d/versions/0.3-41/topics/scatterplot3d
+
+```
+
+## RGL Demo 1
+
+This code block should work well in your own copy of R Studio.  To my knowledge, it's not easily sharable though.  This is a simple way to see an interactive 3-d plot for you own analysis.
+
+This code is commented out to get the subsequent section to work:
+```{r RGLDemo}
+#install.packages("rgl")
+
+#Uncomment the two lines below to see this work in your own copy of R-Studio:
+
+library(rgl)
+plot3d(iris[,1:3],col=c("red","green","blue")[iris$Species],size=5)
+
+#documentation: https://cran.r-project.org/web/packages/rgl/rgl.pdf
+```
+
+## Adding an interactive 3d scatterplot to your knitted markdown R file:
+
+This code is copied almost exactly from StackOverlow:
+
+*https://stackoverflow.com/questions/48691183/r-export-3d-scatterplots-non-interactively*
+
+*Note*: The following structure works on my machine.  It's possible this will not work on your machine.  In that instance, follow the simple directions on the StackOverflow link above or the same instructions copied to the bottom of this markdown file.
+
+```{r MyMachine1, echo=T}
+library(rgl)
+options(rgl.useNULL = TRUE)
+M <- structure(c(1, 0, 0, 0, 0, 0.342020143325668, -0.939692620785909, 
+0, 0, 0.939692620785909, 0.342020143325668, 0, 0, 0, 0, 1), .Dim = c(4L,
+4L))
+```
+
+```{r Interactive1}
+#library(rgl)
+#options(rgl.useNULL = FALSE)
+
+#Note: If the code isn't working on your machine, uncomment the following lines of code and enter the M structure output above.
+
+#M <- par3d("userMatrix")
+#dput(M)
+
+
+plot3d(iris[,1:3],col=c("red","green","blue")[iris$Species],size=5)
+par3d(userMatrix = M)
+rglwidget()
+```
+
+
+## Code from StackOverflow
+
+The Following is an excerpt of user2254330's response on the link posted above.  These are the instruction I used.
+Again, the link is here:
+https://stackoverflow.com/questions/48691183/r-export-3d-scatterplots-non-interactively
+This is copied and pasted below in case the link ever goes bad:
+
+*Before knitting the document, run code like this and interactively choose the initial display you want:*
+
+library(rgl)
+options(rgl.useNULL = FALSE)
+plot3d(iris[,1:3],col=c("red","green","blue")[iris$Species],size=5)
+
+*Once you have it oriented correctly, run this code:*
+
+M <- par3d("userMatrix")
+dput(M)
+
+*You'll get something like*
+
+structure(c(0.776694416999817, 0.198224693536758, -0.597873568534851, 
+0, -0.629868388175964, 0.249577552080154, -0.735511302947998, 
+0, 0.00341932475566864, 0.947849154472351, 0.318700969219208, 
+0, 0, 0, 0, 1), .Dim = c(4L, 4L))
+
+*as output. Then start your R Markdown document with something like*
+
+library(rgl)
+options(rgl.useNULL = TRUE)
+M <- structure(c(0.776694416999817, 0.198224693536758, -0.597873568534851, 
+0, -0.629868388175964, 0.249577552080154, -0.735511302947998, 
+0, 0.00341932475566864, 0.947849154472351, 0.318700969219208, 
+0, 0, 0, 0, 1), .Dim = c(4L, 4L))
+
+*(which you would probably choose not to echo), and in each code chunk that produces a plot, write code like this:*
+
+plot3d(iris[,1:3],col=c("red","green","blue")[iris$Species],size=5)
+par3d(userMatrix = M)
+rglwidget()
+
+*(If this is in a loop or isn't at the top level for some other reason, you'll need print(rglwidget()) instead.)*
+
+*Then all of your plots will initially have the same orientation, but all of them will be user-rotatable.*
